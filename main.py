@@ -1,14 +1,14 @@
-from datetime import date
+import json
+from datetime import date, datetime
 
 class Purchase:
     def __init__(self, supplier_name, part_article, part_name, part_price, quantity, purchase_date):
-        self.supplier_name = self.validate_text_field(supplier_name)
-        self.part_article = self.validate_text_field(part_article)
-        self.part_name = self.validate_text_field(part_name)
-        self.part_price = self.validate_price(part_price)
-        self.quantity = self.validate_quantity(quantity)
-        self.purchase_date = self.validate_date(purchase_date)
-
+        self.supplier_name = supplier_name
+        self.part_article = part_article
+        self.part_name = part_name
+        self.part_price = part_price
+        self.quantity = quantity
+        self.purchase_date = purchase_date
 
     @staticmethod
     def validate_text_field(value):
@@ -99,3 +99,34 @@ class Purchase:
                 f"part_article='{self._part_article}', part_name='{self._part_name}', "
                 f"part_price={self._part_price}, quantity={self._quantity}, "
                 f"purchase_date={self._purchase_date})")
+
+    #Перегрузка
+    @classmethod
+    def from_string(cls, data_str):
+        parts = data_str.split(';')
+        if len(parts) != 6:
+            raise ValueError("Строка должна содержать 6 полей, разделённых ';'")
+        supplier, article, name, price, quantity, date_str = parts
+        purchase_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+        return cls(supplier, article, name, float(price), int(quantity), purchase_date)
+
+    @classmethod
+    def from_json(cls, json_str):
+        data = json.loads(json_str)
+        purchase_date = datetime.strptime(data['purchase_date'], "%d.%m.%Y").date()
+        return cls(
+            data['supplier_name'],
+            data['part_article'],
+            data['part_name'],
+            float(data['part_price']),
+            int(data['quantity']),
+            purchase_date
+        )
+
+p1 = Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11))
+p2 = Purchase.from_string("Поставщик Б;456;Свеча;300;5;10.10.2025")
+p3 = Purchase.from_json('{"supplier_name":"Поставщик В","part_article":"789","part_name":"Тормоз","part_price":1200,"quantity":2,"purchase_date":"11.10.2025"}')
+
+print(p1)
+print(p2)
+print(p3)
