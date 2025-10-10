@@ -95,10 +95,19 @@ class Purchase:
                 f"Дата: {self._purchase_date.strftime('%d.%m.%Y')}")
 
     def __repr__(self):
-        return (f"Purchase(supplier_name='{self._supplier_name}', "
-                f"part_article='{self._part_article}', part_name='{self._part_name}', "
-                f"part_price={self._part_price}, quantity={self._quantity}, "
-                f"purchase_date={self._purchase_date})")
+        return (f"Purchase({self._supplier_name!r}, {self._part_article!r}, {self._part_name!r}, "
+                f"{self._part_price}, {self._quantity}, {self._purchase_date!r})")
+
+    def __eq__(self, other):
+        """Сравнение"""
+        if not isinstance(other, Purchase):
+            return False
+        return (self.supplier_name == other.supplier_name and
+                self.part_article == other.part_article and
+                self.part_name == other.part_name and
+                self.part_price == other.part_price and
+                self.quantity == other.quantity and
+                self.purchase_date == other.purchase_date)
 
     #Перегрузка
     @classmethod
@@ -123,10 +132,23 @@ class Purchase:
             purchase_date
         )
 
+from datetime import date
+
+# Обычный 
 p1 = Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11))
+
+# Данные из строки
 p2 = Purchase.from_string("Поставщик Б;456;Свеча;300;5;10.10.2025")
+
+# Данные из JSON
 p3 = Purchase.from_json('{"supplier_name":"Поставщик В","part_article":"789","part_name":"Тормоз","part_price":1200,"quantity":2,"purchase_date":"11.10.2025"}')
 
+# Полная версия
 print(p1)
-print(p2)
-print(p3)
+
+# Краткая
+print(repr(p2))
+
+# Сравнение
+print(p1 == p2)
+print(p1 == Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11)))  # True
