@@ -1,36 +1,23 @@
 from datetime import date
 
-
 class Purchase:
     def __init__(self, supplier_name, part_article, part_name, part_price, quantity, purchase_date):
-        # Проверяем все поля перед созданием
-        self.supplier_name = self.validate_supplier_name(supplier_name)
-        self.part_article = self.validate_part_article(part_article)
-        self.part_name = self.validate_part_name(part_name)
-        self.part_price = self.validate_part_price(part_price)
+        self.supplier_name = self.validate_text_field(supplier_name)
+        self.part_article = self.validate_text_field(part_article)
+        self.part_name = self.validate_text_field(part_name)
+        self.part_price = self.validate_price(part_price)
         self.quantity = self.validate_quantity(quantity)
-        self.purchase_date = self.validate_purchase_date(purchase_date)
+        self.purchase_date = self.validate_date(purchase_date)
+
 
     @staticmethod
-    def validate_supplier_name(value):
+    def validate_text_field(value):
         if not value or not isinstance(value, str):
-            raise ValueError("Название поставщика не может быть пустым и должно быть строкой")
+            raise ValueError("Поле должно быть непустой строкой")
         return value.strip()
 
     @staticmethod
-    def validate_part_article(value):
-        if not value or not isinstance(value, str):
-            raise ValueError("Артикул детали не может быть пустым и должен быть строкой")
-        return value.strip()
-
-    @staticmethod
-    def validate_part_name(value):
-        if not value or not isinstance(value, str):
-            raise ValueError("Название детали не может быть пустым и должно быть строкой")
-        return value.strip()
-
-    @staticmethod
-    def validate_part_price(value):
+    def validate_price(value):
         if not isinstance(value, (int, float)) or value <= 0:
             raise ValueError("Цена должна быть положительным числом")
         return float(value)
@@ -42,11 +29,11 @@ class Purchase:
         return value
 
     @staticmethod
-    def validate_purchase_date(value):
+    def validate_date(value):
         if not isinstance(value, date):
             raise ValueError("Дата должна быть объектом datetime.date")
         if value > date.today():
-            raise ValueError("Дата закупки не может быть в будущем")
+            raise ValueError("Дата не может быть в будущем")
         return value
 
     @property
@@ -55,7 +42,7 @@ class Purchase:
 
     @supplier_name.setter
     def supplier_name(self, value):
-        self._supplier_name = self.validate_supplier_name(value)
+        self._supplier_name = self.validate_text_field(value)
 
     @property
     def part_article(self):
@@ -63,7 +50,7 @@ class Purchase:
 
     @part_article.setter
     def part_article(self, value):
-        self._part_article = self.validate_part_article(value)
+        self._part_article = self.validate_text_field(value)
 
     @property
     def part_name(self):
@@ -71,7 +58,7 @@ class Purchase:
 
     @part_name.setter
     def part_name(self, value):
-        self._part_name = self.validate_part_name(value)
+        self._part_name = self.validate_text_field(value)
 
     @property
     def part_price(self):
@@ -79,7 +66,7 @@ class Purchase:
 
     @part_price.setter
     def part_price(self, value):
-        self._part_price = self.validate_part_price(value)
+        self._part_price = self.validate_price(value)
 
     @property
     def quantity(self):
@@ -95,7 +82,7 @@ class Purchase:
 
     @purchase_date.setter
     def purchase_date(self, value):
-        self._purchase_date = self.validate_purchase_date(value)
+        self._purchase_date = self.validate_date(value)
 
     def get_total_cost(self):
         return self._quantity * self._part_price
