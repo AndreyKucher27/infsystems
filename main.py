@@ -1,6 +1,38 @@
 import json
 from datetime import date, datetime
 
+class PurchaseSummary:
+    """
+    Краткая версия объекта Purchase.
+    Данные: поставщик, артикул, название детали, количество.
+    """
+    def __init__(self, supplier_name, part_article, part_name, quantity):
+        self.supplier_name = supplier_name
+        self.part_article = part_article
+        self.part_name = part_name
+        self.quantity = quantity
+
+    def __str__(self):
+        return (f"Закупка (кратко): {self.part_name} (арт. {self.part_article})\n"
+                f"Поставщик: {self.supplier_name}\n"
+                f"Количество: {self.quantity} шт.")
+
+    def __repr__(self):
+        return (f"PurchaseSummary({self.supplier_name!r}, {self.part_article!r}, "
+                f"{self.part_name!r}, {self.quantity})")
+
+
+
+    @classmethod
+    def from_purchase(cls, purchase_obj):
+        return cls(
+            supplier_name=purchase_obj.supplier_name,
+            part_article=purchase_obj.part_article,
+            part_name=purchase_obj.part_name,
+            quantity=purchase_obj.quantity
+        )
+
+
 class Purchase:
     def __init__(self, supplier_name, part_article, part_name, part_price, quantity, purchase_date):
         self.supplier_name = supplier_name
@@ -132,9 +164,7 @@ class Purchase:
             purchase_date
         )
 
-from datetime import date
-
-# Обычный 
+# Обычный
 p1 = Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11))
 
 # Данные из строки
@@ -152,3 +182,11 @@ print(repr(p2))
 # Сравнение
 print(p1 == p2)
 print(p1 == Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11)))  # True
+
+summary1 = PurchaseSummary.from_purchase(p1)
+summary2 = PurchaseSummary.from_purchase(p2)
+
+# Выводим на экран
+print(summary1)          # основная
+print(repr(summary2))    # краткая версия
+
