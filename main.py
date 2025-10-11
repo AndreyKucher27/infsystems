@@ -1,46 +1,12 @@
 import json
 from datetime import date, datetime
 
-class PurchaseSummary:
-    """
-    Краткая версия объекта Purchase.
-    Данные: поставщик, артикул, название детали, количество.
-    """
+class PurchaseBase:
     def __init__(self, supplier_name, part_article, part_name, quantity):
         self.supplier_name = supplier_name
         self.part_article = part_article
         self.part_name = part_name
         self.quantity = quantity
-
-    def __str__(self):
-        return (f"Закупка (кратко): {self.part_name} (арт. {self.part_article})\n"
-                f"Поставщик: {self.supplier_name}\n"
-                f"Количество: {self.quantity} шт.")
-
-    def __repr__(self):
-        return (f"PurchaseSummary({self.supplier_name!r}, {self.part_article!r}, "
-                f"{self.part_name!r}, {self.quantity})")
-
-
-
-    @classmethod
-    def from_purchase(cls, purchase_obj):
-        return cls(
-            supplier_name=purchase_obj.supplier_name,
-            part_article=purchase_obj.part_article,
-            part_name=purchase_obj.part_name,
-            quantity=purchase_obj.quantity
-        )
-
-
-class Purchase:
-    def __init__(self, supplier_name, part_article, part_name, part_price, quantity, purchase_date):
-        self.supplier_name = supplier_name
-        self.part_article = part_article
-        self.part_name = part_name
-        self.part_price = part_price
-        self.quantity = quantity
-        self.purchase_date = purchase_date
 
     @staticmethod
     def validate_text_field(value):
@@ -49,23 +15,9 @@ class Purchase:
         return value.strip()
 
     @staticmethod
-    def validate_price(value):
-        if not isinstance(value, (int, float)) or value <= 0:
-            raise ValueError("Цена должна быть положительным числом")
-        return float(value)
-
-    @staticmethod
     def validate_quantity(value):
         if not isinstance(value, int) or value <= 0:
             raise ValueError("Количество должно быть положительным целым числом")
-        return value
-
-    @staticmethod
-    def validate_date(value):
-        if not isinstance(value, date):
-            raise ValueError("Дата должна быть объектом datetime.date")
-        if value > date.today():
-            raise ValueError("Дата не может быть в будущем")
         return value
 
     @property
@@ -93,20 +45,68 @@ class Purchase:
         self._part_name = self.validate_text_field(value)
 
     @property
-    def part_price(self):
-        return self._part_price
-
-    @part_price.setter
-    def part_price(self, value):
-        self._part_price = self.validate_price(value)
-
-    @property
     def quantity(self):
         return self._quantity
 
     @quantity.setter
     def quantity(self, value):
         self._quantity = self.validate_quantity(value)
+
+    def __eq__(self, other):
+        if not isinstance(other, PurchaseBase):
+            return False
+        return (self.supplier_name == other.supplier_name and
+                self.part_article == other.part_article and
+                self.part_name == other.part_name and
+                self.quantity == other.quantity)
+
+
+class PurchaseSummary(PurchaseBase):
+    def __str__(self):
+        return (f"Закупка (кратко): {self.part_name} (арт. {self.part_article})\n"
+                f"Поставщик: {self.supplier_name}\n"
+                f"Количество: {self.quantity} шт.")
+
+    def __repr__(self):
+        return (f"PurchaseSummary({self.supplier_name!r}, {self.part_article!r}, "
+                f"{self.part_name!r}, {self.quantity})")
+
+    @classmethod
+    def from_purchase(cls, purchase_obj):
+        return cls(
+            supplier_name=purchase_obj.supplier_name,
+            part_article=purchase_obj.part_article,
+            part_name=purchase_obj.part_name,
+            quantity=purchase_obj.quantity
+        )
+
+class Purchase(PurchaseBase):
+    def __init__(self, supplier_name, part_article, part_name, part_price, quantity, purchase_date):
+        super().__init__(supplier_name, part_article, part_name, quantity)
+        self.part_price = part_price
+        self.purchase_date = purchase_date
+
+    @staticmethod
+    def validate_price(value):
+        if not isinstance(value, (int, float)) or value <= 0:
+            raise ValueError("Цена должна быть положительным числом")
+        return float(value)
+
+    @staticmethod
+    def validate_date(value):
+        if not isinstance(value, date):
+            raise ValueError("Дата должна быть объектом datetime.date")
+        if value > date.today():
+            raise ValueError("Дата не может быть в будущем")
+        return value
+
+    @property
+    def part_price(self):
+        return self._part_price
+
+    @part_price.setter
+    def part_price(self, value):
+        self._part_price = self.validate_price(value)
 
     @property
     def purchase_date(self):
@@ -117,31 +117,19 @@ class Purchase:
         self._purchase_date = self.validate_date(value)
 
     def get_total_cost(self):
-        return self._quantity * self._part_price
+        return self.quantity * self.part_price
 
     def __str__(self):
-        return (f"Закупка: {self._part_name} (арт. {self._part_article})\n"
-                f"Поставщик: {self._supplier_name}\n"
-                f"Количество: {self._quantity} шт. × {self._part_price} руб.\n"
+        return (f"Закупка: {self.part_name} (арт. {self.part_article})\n"
+                f"Поставщик: {self.supplier_name}\n"
+                f"Количество: {self.quantity} шт. × {self.part_price} руб.\n"
                 f"Общая стоимость: {self.get_total_cost()} руб.\n"
-                f"Дата: {self._purchase_date.strftime('%d.%m.%Y')}")
+                f"Дата: {self.purchase_date.strftime('%d.%m.%Y')}")
 
     def __repr__(self):
-        return (f"Purchase({self._supplier_name!r}, {self._part_article!r}, {self._part_name!r}, "
-                f"{self._part_price}, {self._quantity}, {self._purchase_date!r})")
+        return (f"Purchase({self.supplier_name!r}, {self.part_article!r}, {self.part_name!r}, "
+                f"{self.part_price}, {self.quantity}, {self.purchase_date!r})")
 
-    def __eq__(self, other):
-        """Сравнение"""
-        if not isinstance(other, Purchase):
-            return False
-        return (self.supplier_name == other.supplier_name and
-                self.part_article == other.part_article and
-                self.part_name == other.part_name and
-                self.part_price == other.part_price and
-                self.quantity == other.quantity and
-                self.purchase_date == other.purchase_date)
-
-    #Перегрузка
     @classmethod
     def from_string(cls, data_str):
         parts = data_str.split(';')
@@ -164,7 +152,7 @@ class Purchase:
             purchase_date
         )
 
-# Обычный
+# Полная версия
 p1 = Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11))
 
 # Данные из строки
@@ -173,20 +161,17 @@ p2 = Purchase.from_string("Поставщик Б;456;Свеча;300;5;10.10.2025
 # Данные из JSON
 p3 = Purchase.from_json('{"supplier_name":"Поставщик В","part_article":"789","part_name":"Тормоз","part_price":1200,"quantity":2,"purchase_date":"11.10.2025"}')
 
-# Полная версия
+# Вывод полной версии
 print(p1)
-
-# Краткая
 print(repr(p2))
 
-# Сравнение
+# Сравнение полной версии
 print(p1 == p2)
 print(p1 == Purchase("Поставщик А", "123", "Фильтр", 500, 10, date(2025, 10, 11)))  # True
 
+# Краткая версия через наследование
 summary1 = PurchaseSummary.from_purchase(p1)
 summary2 = PurchaseSummary.from_purchase(p2)
 
-# Выводим на экран
-print(summary1)          # основная
-print(repr(summary2))    # краткая версия
-
+print(summary1)          # читаемая краткая версия
+print(repr(summary2))    # краткая версия для разработчика
