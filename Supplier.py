@@ -13,72 +13,74 @@ class Supplier:
         self.address = address
         self.inn = inn
 
-    # Метод для сеттеров с валидацией
     def __set_field(self, field_name, value, validator, error_message):
+        """Приватный метод для установки полей с проверкой данных."""
         if not validator(value):
             raise ValueError(error_message)
         setattr(self, field_name, value)
 
+
     @property
-    def supplier_id(self): return self.__supplier_id
+    def supplier_id(self): return self._supplier_id
     @supplier_id.setter
     def supplier_id(self, value):
-        self.__set_field('__supplier_id', value, self.validate_supplier_id,
+        self.__set_field('_supplier_id', value, self.validate_supplier_id,
                          "Идентификатор поставщика должен быть положительным числом.")
 
     @property
-    def name(self): return self.__name
+    def name(self): return self._name
     @name.setter
     def name(self, value):
-        self.__set_field('__name', value, self.validate_name, "Название поставщика не может быть пустым.")
+        self.__set_field('_name', value, self.validate_name, "Название поставщика не может быть пустым.")
 
     @property
-    def contact_name(self): return self.__contact_name
+    def contact_name(self): return self._contact_name
     @contact_name.setter
     def contact_name(self, value):
-        self.__set_field('__contact_name', value, self.validate_contact_name,
+        self.__set_field('_contact_name', value, self.validate_contact_name,
                          "Контактное лицо не может быть пустым.")
 
     @property
-    def phone(self): return self.__phone
+    def phone(self): return self._phone
     @phone.setter
     def phone(self, value):
-        self.__set_field('__phone', value, self.validate_phone, "Некорректный формат телефона.")
+        self.__set_field('_phone', value, self.validate_phone, "Некорректный формат телефона.")
 
     @property
-    def email(self): return self.__email
+    def email(self): return self._email
     @email.setter
     def email(self, value):
-        self.__set_field('__email', value, self.validate_email, "Некорректный адрес электронной почты.")
+        self.__set_field('_email', value, self.validate_email, "Некорректный адрес электронной почты.")
 
     @property
-    def city(self): return self.__city
+    def city(self): return self._city
     @city.setter
     def city(self, value):
-        self.__set_field('__city', value, self.validate_city,
+        self.__set_field('_city', value, self.validate_city,
                          "Город не может быть пустым и должен содержать только буквы и пробелы.")
 
     @property
-    def address(self): return self.__address
+    def address(self): return self._address
     @address.setter
     def address(self, value):
-        self.__set_field('__address', value, self.validate_address, "Адрес не может быть пустым.")
+        self.__set_field('_address', value, self.validate_address, "Адрес не может быть пустым.")
 
     @property
-    def inn(self): return self.__inn
+    def inn(self): return self._inn
     @inn.setter
     def inn(self, value):
-        self.__set_field('__inn', value, self.validate_inn, "ИНН должен содержать 10 или 12 цифр.")
+        self.__set_field('_inn', value, self.validate_inn, "ИНН должен содержать 10 или 12 цифр.")
 
     @classmethod
     def from_string(cls, data_str):
+        """Создание объекта из строки, разделённой ';'."""
         supplier_id, name, contact_name, phone, email, city, address, inn = data_str.split(';')
         return cls(int(supplier_id), name, contact_name, phone, email, city, address, inn)
 
     @classmethod
     def from_json(cls, json_str):
+        """Создание объекта из JSON-строки."""
         data = json.loads(json_str)
-        #создание объекта класса
         return cls(
             int(data['supplier_id']),
             data['name'],
@@ -91,23 +93,42 @@ class Supplier:
         )
 
     def display_info(self):
-        print(f"Поставщик: {self.__name}")
-        print(f"Контактное лицо: {self.__contact_name}")
-        print(f"Телефон: {self.__phone}, Email: {self.__email}")
-        print(f"Город: {self.__city}, Адрес: {self.__address}")
-        print(f"ИНН: {self.__inn}")
+        """Вывод полной информации о поставщике."""
+        print(f"Поставщик: {self.name}")
+        print(f"Контактное лицо: {self.contact_name}")
+        print(f"Телефон: {self.phone}, Email: {self.email}")
+        print(f"Город: {self.city}, Адрес: {self.address}")
+        print(f"ИНН: {self.inn}")
+
+    def short_info(self):
+        """Краткая версия объекта."""
+        return f"{self.name} ({self.contact_name}) — Тел: {self.phone}, Email: {self.email}"
 
     def __str__(self):
-        return (f"{self.__name} ({self.__contact_name})\n"
-                f"Телефон: {self.__phone}, Email: {self.__email}\n"
-                f"Город: {self.__city}, Адрес: {self.__address}\n"
-                f"ИНН: {self.__inn}")
+        """Полная строковая версия объекта."""
+        return (f"{self.name} ({self.contact_name})\n"
+                f"Телефон: {self.phone}, Email: {self.email}\n"
+                f"Город: {self.city}, Адрес: {self.address}\n"
+                f"ИНН: {self.inn}")
 
     def __repr__(self):
-        return (f"Supplier(supplier_id={self.__supplier_id}, name={self.__name!r}, "
-                f"contact_name={self.__contact_name!r}, phone={self.__phone!r}, "
-                f"email={self.__email!r}, city={self.__city!r}, "
-                f"address={self.__address!r}, inn={self.__inn!r})")
+        return (f"Supplier(supplier_id={self._supplier_id}, name={self._name!r}, "
+                f"contact_name={self._contact_name!r}, phone={self._phone!r}, "
+                f"email={self._email!r}, city={self._city!r}, "
+                f"address={self._address!r}, inn={self._inn!r})")
+
+    def __eq__(self, other):
+        """Сравнение"""
+        if not isinstance(other, Supplier):
+            return False
+        return (self.supplier_id == other.supplier_id and
+                self.name == other.name and
+                self.contact_name == other.contact_name and
+                self.phone == other.phone and
+                self.email == other.email and
+                self.city == other.city and
+                self.address == other.address and
+                self.inn == other.inn)
 
     @staticmethod
     def validate_supplier_id(value):
@@ -123,7 +144,7 @@ class Supplier:
 
     @staticmethod
     def validate_phone(value):
-        """Телефон может содержать цифры, +, -, пробелы и скобки"""
+        """Телефон может содержать цифры, +, -, пробелы и скобки."""
         if not isinstance(value, str) or not value.strip():
             return False
         pattern = r'^[\d\+\-\(\)\s]+$'
@@ -135,7 +156,7 @@ class Supplier:
 
     @staticmethod
     def validate_city(value):
-        """Город не пустой, только буквы и пробелы"""
+        """Город не пустой, только буквы и пробелы."""
         if not isinstance(value, str) or not value.strip():
             return False
         pattern = r'^[A-Za-zА-Яа-яЁё\s\-]+$'
@@ -143,9 +164,22 @@ class Supplier:
 
     @staticmethod
     def validate_address(value):
-        """Адрес не может быть пустым"""
+        """Адрес не может быть пустым."""
         return isinstance(value, str) and bool(value.strip())
 
     @staticmethod
     def validate_inn(value):
+        """ИНН — строка из 10 или 12 цифр."""
         return isinstance(value, str) and value.isdigit() and len(value) in (10, 12)
+
+
+if __name__ == "__main__":
+    s1 = Supplier.from_string("1;ООО АвтоПартс;Иванов;+7 495 123-45-67;info@parts.ru;Москва;ул. Ленина, 1;1234567890")
+    s2 = Supplier.from_json('{"supplier_id":1,"name":"ООО АвтоПартс","contact_name":"Иванов","phone":"+7 495 123-45-67","email":"info@parts.ru","city":"Москва","address":"ул. Ленина, 1","inn":"1234567890"}')
+
+    print("Полная версия объекта:")
+    print(repr(s1))
+    print("\nКраткая версия объекта:")
+    print(s1.short_info())
+    print("\nСравнение объектов:")
+    print(s1 == s2)
