@@ -2,6 +2,7 @@ import re
 import json
 
 class Supplier:
+    """Класс, представляющий поставщика компании."""
 
     def __init__(self, supplier_id, name, contact_name, phone, email, city, address, inn):
         self.supplier_id = supplier_id
@@ -172,6 +173,87 @@ class Supplier:
         """ИНН — строка из 10 или 12 цифр."""
         return isinstance(value, str) and value.isdigit() and len(value) in (10, 12)
 
+class SupplierShort:
+    """Краткая версия класса Supplier (без адреса и контактного лица)."""
+
+    def __init__(self, supplier_id, name, phone, email, inn):
+        self.supplier_id = supplier_id
+        self.name = name
+        self.phone = phone
+        self.email = email
+        self.inn = inn
+
+    # --- Инкапсуляция ---
+    @property
+    def supplier_id(self): return self._supplier_id
+    @supplier_id.setter
+    def supplier_id(self, value):
+        if not isinstance(value, int) or value <= 0:
+            raise ValueError("Идентификатор должен быть положительным числом.")
+        self._supplier_id = value
+
+    @property
+    def name(self): return self._name
+    @name.setter
+    def name(self, value):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("Название поставщика не может быть пустым.")
+        self._name = value.strip()
+
+    @property
+    def phone(self): return self._phone
+    @phone.setter
+    def phone(self, value):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("Телефон не может быть пустым.")
+        self._phone = value.strip()
+
+    @property
+    def email(self): return self._email
+    @email.setter
+    def email(self, value):
+        if not isinstance(value, str) or '@' not in value:
+            raise ValueError("Некорректный email.")
+        self._email = value.strip()
+
+    @property
+    def inn(self): return self._inn
+    @inn.setter
+    def inn(self, value):
+        if not (isinstance(value, str) and value.isdigit() and len(value) in (10, 12)):
+            raise ValueError("ИНН должен содержать 10 или 12 цифр.")
+        self._inn = value
+
+    # --- Альтернативный конструктор ---
+    @classmethod
+    def from_supplier(cls, supplier):
+        """Создание краткого объекта на основе полного объекта Supplier."""
+        return cls(
+            supplier.supplier_id,
+            supplier.name,
+            supplier.phone,
+            supplier.email,
+            supplier.inn
+        )
+
+    # --- Методы отображения ---
+    def __str__(self):
+        return f"{self.name} — тел: {self.phone}, email: {self.email}, ИНН: {self.inn}"
+
+    def __repr__(self):
+        return (f"SupplierShort(supplier_id={self._supplier_id}, "
+                f"name='{self._name}', phone='{self._phone}', "
+                f"email='{self._email}', inn='{self._inn}')")
+
+    def __eq__(self, other):
+        if not isinstance(other, SupplierShort):
+            return False
+        return (self.supplier_id == other.supplier_id and
+                self.name == other.name and
+                self.phone == other.phone and
+                self.email == other.email and
+                self.inn == other.inn)
+
 
 if __name__ == "__main__":
     s1 = Supplier.from_string("1;ООО АвтоПартс;Иванов;+7 495 123-45-67;info@parts.ru;Москва;ул. Ленина, 1;1234567890")
@@ -183,3 +265,11 @@ if __name__ == "__main__":
     print(s1.short_info())
     print("\nСравнение объектов:")
     print(s1 == s2)
+
+    print("\nСоздаём краткий объект на основе полного:")
+    short_supplier = SupplierShort.from_supplier(s1)
+    print(short_supplier)
+
+    print("\nrepr краткого объекта:")
+    print(repr(short_supplier))
+
