@@ -1,4 +1,5 @@
 import re
+import json
 
 class Supplier:
 
@@ -12,7 +13,7 @@ class Supplier:
         self.address = address
         self.inn = inn
 
-    #Метод для сеттеров с валидацией
+    # Метод для сеттеров с валидацией
     def __set_field(self, field_name, value, validator, error_message):
         if not validator(value):
             raise ValueError(error_message)
@@ -68,6 +69,26 @@ class Supplier:
     @inn.setter
     def inn(self, value):
         self.__set_field('__inn', value, self.validate_inn, "ИНН должен содержать 10 или 12 цифр.")
+
+    @classmethod
+    def from_string(cls, data_str):
+        supplier_id, name, contact_name, phone, email, city, address, inn = data_str.split(';')
+        return cls(int(supplier_id), name, contact_name, phone, email, city, address, inn)
+
+    @classmethod
+    def from_json(cls, json_str):
+        data = json.loads(json_str)
+        #создание объекта класса
+        return cls(
+            int(data['supplier_id']),
+            data['name'],
+            data['contact_name'],
+            data['phone'],
+            data['email'],
+            data['city'],
+            data['address'],
+            data['inn']
+        )
 
     def display_info(self):
         print(f"Поставщик: {self.__name}")
