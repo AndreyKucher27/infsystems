@@ -3,96 +3,71 @@ import re
 class Supplier:
 
     def __init__(self, supplier_id, name, contact_name, phone, email, city, address, inn):
-        # Валидация всех полей
-        if not self.validate_supplier_id(supplier_id):
-            raise ValueError("Идентификатор поставщика должен быть положительным числом.")
-        if not self.validate_name(name):
-            raise ValueError("Название поставщика не может быть пустым.")
-        if not self.validate_contact_name(contact_name):
-            raise ValueError("Контактное лицо не может быть пустым.")
-        if not self.validate_phone(phone):
-            raise ValueError("Некорректный формат телефона.")
-        if not self.validate_email(email):
-            raise ValueError("Некорректный адрес электронной почты.")
-        if not self.validate_city(city):
-            raise ValueError("Город не может быть пустым и должен содержать только буквы и пробелы.")
-        if not self.validate_address(address):
-            raise ValueError("Адрес не может быть пустым.")
-        if not self.validate_inn(inn):
-            raise ValueError("ИНН должен содержать 10 или 12 цифр.")
+        self.supplier_id = supplier_id
+        self.name = name
+        self.contact_name = contact_name
+        self.phone = phone
+        self.email = email
+        self.city = city
+        self.address = address
+        self.inn = inn
 
-        self.__supplier_id = supplier_id
-        self.__name = name
-        self.__contact_name = contact_name
-        self.__phone = phone
-        self.__email = email
-        self.__city = city
-        self.__address = address
-        self.__inn = inn
+    #Метод для сеттеров с валидацией
+    def __set_field(self, field_name, value, validator, error_message):
+        if not validator(value):
+            raise ValueError(error_message)
+        setattr(self, field_name, value)
 
     @property
     def supplier_id(self): return self.__supplier_id
     @supplier_id.setter
     def supplier_id(self, value):
-        if not self.validate_supplier_id(value):
-            raise ValueError("Идентификатор поставщика должен быть положительным числом.")
-        self.__supplier_id = value
+        self.__set_field('__supplier_id', value, self.validate_supplier_id,
+                         "Идентификатор поставщика должен быть положительным числом.")
 
     @property
     def name(self): return self.__name
     @name.setter
     def name(self, value):
-        if not self.validate_name(value):
-            raise ValueError("Название поставщика не может быть пустым.")
-        self.__name = value
+        self.__set_field('__name', value, self.validate_name, "Название поставщика не может быть пустым.")
 
     @property
     def contact_name(self): return self.__contact_name
     @contact_name.setter
     def contact_name(self, value):
-        if not self.validate_contact_name(value):
-            raise ValueError("Контактное лицо не может быть пустым.")
-        self.__contact_name = value
+        self.__set_field('__contact_name', value, self.validate_contact_name,
+                         "Контактное лицо не может быть пустым.")
 
     @property
     def phone(self): return self.__phone
     @phone.setter
     def phone(self, value):
-        if not self.validate_phone(value):
-            raise ValueError("Некорректный формат телефона.")
-        self.__phone = value
+        self.__set_field('__phone', value, self.validate_phone, "Некорректный формат телефона.")
 
     @property
     def email(self): return self.__email
     @email.setter
     def email(self, value):
-        if not self.validate_email(value):
-            raise ValueError("Некорректный адрес электронной почты.")
-        self.__email = value
+        self.__set_field('__email', value, self.validate_email, "Некорректный адрес электронной почты.")
 
     @property
     def city(self): return self.__city
     @city.setter
     def city(self, value):
-        if not self.validate_city(value):
-            raise ValueError("Город не может быть пустым и должен содержать только буквы и пробелы.")
-        self.__city = value
+        self.__set_field('__city', value, self.validate_city,
+                         "Город не может быть пустым и должен содержать только буквы и пробелы.")
 
     @property
     def address(self): return self.__address
     @address.setter
     def address(self, value):
-        if not self.validate_address(value):
-            raise ValueError("Адрес не может быть пустым.")
-        self.__address = value
+        self.__set_field('__address', value, self.validate_address, "Адрес не может быть пустым.")
 
     @property
     def inn(self): return self.__inn
     @inn.setter
     def inn(self, value):
-        if not self.validate_inn(value):
-            raise ValueError("ИНН должен содержать 10 или 12 цифр.")
-        self.__inn = value
+        self.__set_field('__inn', value, self.validate_inn, "ИНН должен содержать 10 или 12 цифр.")
 
     def display_info(self):
         print(f"Поставщик: {self.__name}")
