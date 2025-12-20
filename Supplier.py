@@ -1,64 +1,165 @@
-import re
 import json
 
 class SupplierShort:
 
-    def __init__(self, supplier_id, name, phone, email, inn):
-        self.supplier_id = supplier_id
-        self.name = name
-        self.phone = phone
-        self.email = email
-        self.inn = inn
+    possible_keys = ('supplier_id', 'name', 'phone', 'email', 'inn')
 
-    def __set_field(self, field_name, value, validator, error_message):
+    @classmethod
+    def _parse_init_input(cls, args, kwargs, possible_keys=None, type_name=None):
+        """
+        Универсальный парсер входных параметров
+        """
+        if possible_keys is None:
+            possible_keys = cls.possible_keys
+        if type_name is None:
+            type_name = cls.__name__
+
+        data = {}
+        for k in possible_keys:
+            if k in kwargs:
+                data[k] = kwargs[k]
+
+        if args:
+            if len(args) == 1:
+                single = args[0]
+                if isinstance(single, str):
+                    s = single.strip()
+                    parsed = None
+                    if (s.startswith('{') and s.endswith('}')) or ('"' in s and ':' in s):
+                        try:
+                            parsed = json.loads(s)
+                        except (json.JSONDecodeError, TypeError):
+                            parsed = None
+                    if isinstance(parsed, dict):
+                        for k in possible_keys:
+                            if k in parsed and k not in data:
+                                data[k] = parsed[k]
+                    else:
+                        parts = s.split(';')
+                        if len(parts) == len(possible_keys):
+                            parsed_map = dict(zip(possible_keys, parts))
+                            for k in possible_keys:
+                                if k not in data:
+                                    data[k] = parsed_map[k]
+                        else:
+                            raise ValueError(f"Ожидалась строка в формате JSON или {len(possible_keys)} элементов для {type_name}")
+                elif isinstance(single, dict):
+                    for k in possible_keys:
+                        if k in single and k not in data:
+                            data[k] = single[k]
+                else:
+                    raise ValueError("Неподдерживаемый тип единственного позиционного аргумента")
+            elif len(args) == len(possible_keys):
+                seq = dict(zip(possible_keys, args))
+                for k in possible_keys:
+                    if k not in data:
+                        data[k] = seq[k]
+            else:
+                raise ValueError("Неподдерживаемая комбинация позиционных аргументов для " + type_name)
+
+        return data
+
+    def __init__(self, *args, **kwargs):
+        data = self._parse_init_input(args, kwargs, possible_keys=self.possible_keys, type_name=self.__class__.__name__)
+
+        missing = [k for k in SupplierShort.possible_keys if k not in data]
+        if missing:
+            raise ValueError(f"Не хватает данных для инициализации {SupplierShort.__name__}: отсутствуют {missing}")
+
+        if isinstance(data['supplier_id'], str) and data['supplier_id'].strip().isdigit():
+            data['supplier_id'] = int(data['supplier_id'].strip())
+
+        self.supplier_id = data['supplier_id']
+        self.name = data['name']
+        self.phone = data['phone']
+        self.email = data['email']
+        self.inn = data['inn']
+
+    def _set_field(self, field_name, value, validator, error_message):
         if not validator(value):
-            raise ValueError(error_message)
+            raise ValueError(f"{error_message} (значение: {repr(value)})")
         setattr(self, field_name, value)
 
     @property
     def supplier_id(self): return self._supplier_id
     @supplier_id.setter
     def supplier_id(self, value):
-        self.__set_field('_supplier_id', value, self.validate_supplier_id,
-                         "ID должен быть положительным числом.")
+        self._set_field('_supplier_id', value, self.validate_supplier_id,
+                        "ID должен быть положительным целым числом.")
 
     @property
     def name(self): return self._name
     @name.setter
     def name(self, value):
-        self.__set_field('_name', value, self.validate_name,
-                         "Название поставщика не может быть пустым.")
+        self._set_field('_name', value, self.validate_name, "Название поставщика некорректно.")
 
     @property
     def phone(self): return self._phone
     @phone.setter
     def phone(self, value):
-        self.__set_field('_phone', value, self.validate_phone,
-                         "Некорректный формат телефона.")
+        self._set_field('_phone', value, self.validate_phone, "Неверный формат телефона.")
 
     @property
     def email(self): return self._email
     @email.setter
     def email(self, value):
-        self.__set_field('_email', value, self.validate_email,
-                         "Некорректный email.")
+        self._set_field('_email', value, self.validate_email, "Некорректный email.")
 
     @property
     def inn(self): return self._inn
     @inn.setter
     def inn(self, value):
-        self.__set_field('_inn', value, self.validate_inn,
-                         "ИНН должен содержать 10 или 12 цифр.")
+        self._set_field('_inn', value, self.validate_inn,
+                        "Некорректный ИНН (проверьте длину и контрольную цифру).")
 
-    # --- Методы сравнения и вывода ---
-    def __eq__(self, other):
-        if not isinstance(other, SupplierShort):
-            return False
-        return (self.supplier_id == other.supplier_id and
-                self.name == other.name and
-                self.phone == other.phone and
-                self.email == other.email and
-                self.inn == other.inn)
+    @staticmethod
+    def validate_supplier_id(value): return isinstance(value, int) and value > 0
+
+    @staticmethod
+    def validate_name(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        if len(value) < 2: return False
+        return any(ch.isalpha() for ch in value)
+
+    @staticmethod
+    def validate_phone(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        if len([ch for ch in value if ch.isdigit()]) < 10: return False
+        allowed = set("0123456789 +-()")
+        if any(ch not in allowed for ch in value): return False
+        return value[0].isdigit() or value.startswith("+")
+
+    @staticmethod
+    def validate_email(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        if value.count("@") != 1: return False
+        local, domain = value.split("@")
+        if not local or not domain: return False
+        if "." not in domain: return False
+        if domain.startswith(".") or domain.endswith("."): return False
+        if " " in value: return False
+        return True
+
+    @staticmethod
+    def validate_inn(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        if not value.isdigit(): return False
+        if len(value) not in (10, 12): return False
+
+        def calc(ctrl_nums, digits):
+            return sum(int(digits[i]) * ctrl_nums[i] for i in range(len(ctrl_nums))) % 11 % 10
+
+        if len(value) == 10:
+            return calc([2, 4, 10, 3, 5, 9, 4, 6, 8], value) == int(value[-1])
+        if len(value) == 12:
+            n11 = calc([7, 2, 4, 10, 3, 5, 9, 4, 6, 8, 0], value)
+            n12 = calc([3, 7, 2, 4, 10, 3, 5, 9, 4, 6, 8], value)
+            return n11 == int(value[10]) and n12 == int(value[11])
+        return False
 
     def __str__(self):
         return f"{self.name} — тел: {self.phone}, email: {self.email}, ИНН: {self.inn}"
@@ -67,86 +168,62 @@ class SupplierShort:
         return (f"SupplierShort(supplier_id={self._supplier_id}, name='{self._name}', "
                 f"phone='{self._phone}', email='{self._email}', inn='{self._inn}')")
 
-    # --- Статические проверки ---
-    @staticmethod
-    def validate_supplier_id(value):
-        return isinstance(value, int) and value > 0
-
-    @staticmethod
-    def validate_name(value):
-        return isinstance(value, str) and bool(value.strip())
-
-    @staticmethod
-    def validate_phone(value):
-        return isinstance(value, str) and bool(re.match(r'^[\d\+\-\(\)\s]+$', value.strip()))
-
-    @staticmethod
-    def validate_email(value):
-        return isinstance(value, str) and "@" in value
-
-    @staticmethod
-    def validate_inn(value):
-        return isinstance(value, str) and value.isdigit() and len(value) in (10, 12)
-
-
 
 class Supplier(SupplierShort):
 
-    def __init__(self, supplier_id, name, contact_name, phone, email, city, address, inn):
-        super().__init__(supplier_id, name, phone, email, inn)
-        self.contact_name = contact_name
-        self.city = city
-        self.address = address
+    possible_keys = ('supplier_id', 'name', 'contact_name', 'phone', 'email', 'city', 'address', 'inn')
 
-    # --- Инкапсуляция дополнительных полей ---
+    def __init__(self, *args, **kwargs):
+        data = self._parse_init_input(args, kwargs, possible_keys=self.possible_keys, type_name=self.__class__.__name__)
+
+        missing = [k for k in self.possible_keys if k not in data]
+        if missing:
+            raise ValueError(f"Не хватает данных для инициализации {self.__class__.__name__}: отсутствуют {missing}")
+
+        super().__init__(**{k: data[k] for k in SupplierShort.possible_keys})
+
+        self.contact_name = data['contact_name']
+        self.city = data['city']
+        self.address = data['address']
+
     @property
     def contact_name(self): return self._contact_name
     @contact_name.setter
     def contact_name(self, value):
-        self._contact_name = value.strip() if isinstance(value, str) and value.strip() else \
-            ValueError("Контактное лицо не может быть пустым.")
+        self._set_field('_contact_name', value, self.validate_contact_name,
+                        "Некорректное имя контактного лица.")
 
     @property
     def city(self): return self._city
     @city.setter
     def city(self, value):
-        if not (isinstance(value, str) and re.match(r'^[A-Za-zА-Яа-яЁё\s\-]+$', value.strip())):
-            raise ValueError("Город должен содержать только буквы и пробелы.")
-        self._city = value.strip()
+        self._set_field('_city', value, self.validate_city, "Некорректное название города.")
 
     @property
     def address(self): return self._address
     @address.setter
     def address(self, value):
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError("Адрес не может быть пустым.")
-        self._address = value.strip()
+        self._set_field('_address', value, self.validate_address, "Некорректный адрес.")
 
-    # --- Альтернативные конструкторы ---
-    @classmethod
-    def from_string(cls, data_str):
-        supplier_id, name, contact_name, phone, email, city, address, inn = data_str.split(';')
-        return cls(int(supplier_id), name, contact_name, phone, email, city, address, inn)
+    @staticmethod
+    def validate_contact_name(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        if len(value) < 2: return False
+        return any(ch.isalpha() for ch in value)
 
-    @classmethod
-    def from_json(cls, json_str):
-        data = json.loads(json_str)
-        return cls(
-            int(data['supplier_id']), data['name'], data['contact_name'],
-            data['phone'], data['email'], data['city'], data['address'], data['inn']
-        )
+    @staticmethod
+    def validate_city(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        if len(value) < 2: return False
+        return all(ch.isalpha() or ch in " -" for ch in value)
 
-    # --- Методы отображения ---
-    def short_info(self):
-        """Краткая информация — доступна благодаря наследованию."""
-        return super().__str__()
-
-    def display_info(self):
-        """Подробная информация о поставщике."""
-        print(f"Поставщик: {self.name} ({self.contact_name})")
-        print(f"Телефон: {self.phone}, Email: {self.email}")
-        print(f"Город: {self.city}, Адрес: {self.address}")
-        print(f"ИНН: {self.inn}")
+    @staticmethod
+    def validate_address(value):
+        if not isinstance(value, str): return False
+        value = value.strip()
+        return len(value) >= 5 and any(ch.isdigit() for ch in value)
 
     def __str__(self):
         return (f"{self.name} ({self.contact_name}) — тел: {self.phone}, email: {self.email}\n"
@@ -158,16 +235,17 @@ class Supplier(SupplierShort):
                 f"email='{self._email}', city='{self._city}', address='{self._address}', "
                 f"inn='{self._inn}')")
 
-
-
-
-if __name__ == "__main__":
-    s1 = Supplier.from_string("1;ООО АвтоПартс;Иванов;+7 495 123-45-67;info@parts.ru;Москва;ул. Ленина, 1;1234567890")
-    s2 = Supplier.from_json('{"supplier_id":1,"name":"ООО АвтоПартс","contact_name":"Иванов","phone":"+7 495 123-45-67","email":"info@parts.ru","city":"Москва","address":"ул. Ленина, 1","inn":"1234567890"}')
-
-    print("Полная версия объекта:")
-    print(repr(s1))
-    print("\nКраткая версия объекта:")
-    print(s1.short_info())
-    print("\nСравнение объектов:")
-    print(s1 == s2)
+    def to_dict(self):
+        """
+        Преобразует объект Supplier в словарь для записи в JSON
+        """
+        return {
+            "supplier_id": self.supplier_id,
+            "name": self.name,
+            "contact_name": self.contact_name,
+            "phone": self.phone,
+            "email": self.email,
+            "city": self.city,
+            "address": self.address,
+            "inn": self.inn
+        }
