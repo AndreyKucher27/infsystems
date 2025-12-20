@@ -1,0 +1,42 @@
+[
+    {
+        "supplier_id": 1,
+        "name": "ООО АвтоПартс",
+        "contact_name": "Иванов И.И.",
+        "phone": "+7 495 123 45 67",
+        "email": "info@parts.ru",
+        "city": "Москва",
+        "address": "ул. Ленина, 15",
+        "inn": "7707083893"
+    },
+    {
+        "supplier_id": 2,
+        "name": "ЗАО ЗапчастьСнаб",
+        "contact_name": "Петров П.П.",
+        "phone": "+7 812 987 65 43",
+        "email": "sales@zapsnab.ru",
+        "city": "Санкт-Петербург",
+        "address": "Невский пр., 42",
+        "inn": "7707083893"
+    },
+    {
+        "supplier_id": 3,
+        "name": "ООО НоваяФирма",
+        "contact_name": "Сидоров С.С.",
+        "phone": "+7 999 111 22 33",
+        "email": "new@parts.ru",
+        "city": "Казань",
+        "address": "ул. Пушкина, 10",
+        "inn": "7707083893"
+    },
+    {
+        "supplier_id": 3,
+        "name": "ООО НоваяФирма",
+        "contact_name": "Сидоров С.С.",
+        "phone": "+7 999 111 22 33",
+        "email": "new@parts.ru",
+        "city": "Казань",
+        "address": "ул. Пушкина, 10",
+        "inn": "7707083893"
+    }
+]
