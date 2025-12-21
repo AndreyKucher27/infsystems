@@ -75,3 +75,35 @@ class Supplier_rep_json:
 
         self.write_all(suppliers)
         return supplier
+
+    # g. Заменить элемент списка по ID
+    def replace_by_id(self, supplier_id: int, new_supplier: Supplier) -> bool:
+        suppliers = self.read_all()
+
+        for i, supplier in enumerate(suppliers):
+            if supplier.supplier_id == supplier_id:
+                # сохраняем старый ID
+                new_supplier.supplier_id = supplier_id
+                suppliers[i] = new_supplier
+                self.write_all(suppliers)
+                return True
+
+        return False
+
+    # h. Удалить элемент списка по ID
+    def delete_by_id(self, supplier_id: int) -> bool:
+        suppliers = self.read_all()
+        new_suppliers = [s for s in suppliers if s.supplier_id != supplier_id]
+
+        if len(new_suppliers) == len(suppliers):
+            return False  # ничего не удалено
+
+        self.write_all(new_suppliers)
+        return True
+
+    # i. Получить количество элементов
+    def get_count(self) -> int:
+        return len(self.read_all())
+
+
+
