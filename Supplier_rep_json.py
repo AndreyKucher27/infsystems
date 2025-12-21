@@ -1,5 +1,5 @@
 import json
-from Supplier import Supplier
+from Supplier import Supplier, SupplierShort
 
 
 class Supplier_rep_json:
@@ -12,8 +12,11 @@ class Supplier_rep_json:
 
     # a. Чтение всех значений из файла
     def read_all(self) -> list:
-        with open(self.file_path, "r", encoding="utf-8") as file:
-            data = json.load(file)
+        try:
+            with open(self.file_path, "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            data = []
 
         return [Supplier(item) for item in data]
 
@@ -29,3 +32,46 @@ class Supplier_rep_json:
             if supplier.supplier_id == supplier_id:
                 return supplier
         return None
+
+    # d. Пагинация — получить k объектов SupplierShort с n-й страницы
+    def get_k_n_short_list(self, k: int, n: int):
+        all_suppliers = self.read_all()
+        #Явное создание объектов SupplierShort (лишние поля отбрасываются, нужное копируется и остается)
+        #SupplierShort может быть создан из Supplier, потому что у Supplier есть все нужные данные
+        short_list = [
+            SupplierShort(
+                supplier_id=s.supplier_id,
+                name=s.name,
+                phone=s.phone,
+                email=s.email,
+                inn=s.inn
+            )
+            for s in all_suppliers
+        ]
+
+        start_index = (n - 1) * k
+        end_index = start_index + k
+
+        return short_list[start_index:end_index]
+
+    # e. Сортировка поставщиков по городу
+    def sort_by_city(self):
+        suppliers = self.read_all()
+        return sorted(suppliers, key=lambda s: s.city)
+
+    # f. Добавление нового поставщика с автогенерацией ID
+    def add_supplier(self, supplier: Supplier):
+        suppliers = self.read_all()
+
+        existing_ids = [
+            s.supplier_id for s in suppliers
+            if isinstance(s.supplier_id, int)
+        ]
+
+        new_id = max(existing_ids) + 1 if existing_ids else 1
+
+        supplier.supplier_id = new_id
+        suppliers.append(supplier)
+
+        self.write_all(suppliers)
+        return supplier
