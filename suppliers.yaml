@@ -1,0 +1,88 @@
+- supplier_id: 1
+  name: ООО ОбновлённыйПоставщик
+  contact_name: Новый Контакт
+  phone: +7 900 000 00 00
+  email: updated@supplier.ru
+  city: Пермь
+  address: ул. Новая, 1
+  inn: '7707083893'
+- supplier_id: 3
+  name: ООО НоваяФирма
+  contact_name: Сидоров С.С.
+  phone: +7 999 111 22 33
+  email: new@parts.ru
+  city: Казань
+  address: ул. Пушкина, 10
+  inn: '7707083893'
+- supplier_id: 4
+  name: ООО АвтоМир
+  contact_name: Кузнецов А.А.
+  phone: +7 495 222 33 44
+  email: avtomir@mail.ru
+  city: Москва
+  address: ул. Тверская, 25
+  inn: '7707083893'
+- supplier_id: 5
+  name: ООО ДетальСервис
+  contact_name: Смирнова Е.Е.
+  phone: +7 812 333 44 55
+  email: service@detal.ru
+  city: Санкт-Петербург
+  address: ул. Литейный, 10
+  inn: '7707083893'
+- supplier_id: 6
+  name: ЗАО ТехноПарт
+  contact_name: Фёдоров В.В.
+  phone: +7 495 444 55 66
+  email: techno@parts.ru
+  city: Москва
+  address: ул. Садовая, 7
+  inn: '7707083893'
+- supplier_id: 7
+  name: ООО АвтоКомплект
+  contact_name: Николаев И.И.
+  phone: +7 812 555 66 77
+  email: info@autocomp.ru
+  city: Санкт-Петербург
+  address: ул. Большая Морская, 18
+  inn: '7707083893'
+- supplier_id: 8
+  name: ООО МоторСнаб
+  contact_name: Васильев П.П.
+  phone: +7 495 666 77 88
+  email: motor@snab.ru
+  city: Москва
+  address: ул. Арбат, 3
+  inn: '7707083893'
+- supplier_id: 9
+  name: ООО РемонтПарт
+  contact_name: Соловьёв С.С.
+  phone: +7 812 777 88 99
+  email: remont@parts.ru
+  city: Санкт-Петербург
+  address: ул. Восстания, 11
+  inn: '7707083893'
+- supplier_id: 10
+  name: ООО ЗапчастиПро
+  contact_name: Кириллов А.А.
+  phone: +7 495 888 99 00
+  email: pro@zapchasti.ru
+  city: Москва
+  address: ул. Петровка, 20
+  inn: '7707083893'
+- supplier_id: 11
+  name: ООО Тест
+  contact_name: Тест Т.Т.
+  phone: +7 900 000 00 00
+  email: test@test.ru
+  city: Рязань
+  address: ул. Тестовая, 1
+  inn: '7707083893'
+- supplier_id: 12
+  name: ООО Тест
+  contact_name: Тест Т.Т.
+  phone: +7 900 000 00 00
+  email: test@test.ru
+  city: Рязань
+  address: ул. Тестовая, 1
+  inn: '7707083893'
